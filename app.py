@@ -11,14 +11,19 @@ from langchain.vectorstores import Chroma
 # Import API Key
 from api_file import llm_api_key
 # Import more vector store stuff from langchain
+from langchain.agents.agent_toolkits import (
+    create_vectorstore_agent,
+    VectorStoreToolkit,
+    VectorStoreInfo
+)
 
-
+os.environ["OPENAI_API_KEY"] = llm_api_key
 
 # Create instance of OpenAI LLM
-llm = OpenAI(temperature=0.1, openai_api_key=llm_api_key, verbose=True) 
+llm = OpenAI(temperature=0.1, verbose=True) 
 
 # Set path to the document
-avgo_document = os.path.relpath('Docs/broadcom_annual_report.pdf')
+avgo_document = os.path.relpath('Docs/broadcom_annual_report_2022.pdf')
 
 # Create a loader for PDF's
 loader = PyPDFLoader(avgo_document)
@@ -29,14 +34,38 @@ pages = loader.load_and_split()
 # Load documents into vector database aka ChromaDB
 store = Chroma.from_documents(pages, collection_name='broadcom_annual_report')
 
+# Create vectorstore info object: :like a metadata repo ?
+vectorstore_info = VectorStoreInfo(
+    name="broadcom_annual_report",
+    description="2022 Broadcom annual report as a pdf",
+    vectorstore=store
+)
+
+# Converting the document store into a langchain toolkit
+# This makes the PDF available as a tool to langchain
+toolkit = VectorStoreToolkit(vectorstore_info=vectorstore_info)
+
+# Add the toolkit to an end-to-end langchain
+agent_executor = create_vectorstore_agent(
+    llm=llm,
+    toolkit=toolkit,
+    verbose=True
+)
+
+
+
 # Create a text input box for the user.
 prompt = st.text_input("Input your prompt here")
 
 # If the user hits enter
 if prompt:
     # Then pass the prompt to the LLM
-    response = llm(prompt)
-    # Write it out to the screen
+    # response = llm(prompt)
+
+    # Using the document agent instead of the raw llm
+    response = agent_executor.run(prompt)
+
+    # ...and write it out to the screen
     st.write(response)
 
     # Use streamlit expander
