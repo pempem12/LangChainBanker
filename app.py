@@ -8,14 +8,14 @@ import streamlit as st
 from langchain.document_loaders import PyPDFLoader
 # Importing chroma as the vector store
 from langchain.vectorstores import Chroma
+# Import API Key
+from api_file import llm_api_key
+# Import more vector store stuff from langchain
 
 
-
-# This can be replaced with other LLM providers
-os.environ["OPEN_AI_KEY"] = ""
 
 # Create instance of OpenAI LLM
-llm = OpenAI(temperature=0.1, openai_api_key=os.environ["OPEN_AI_KEY"], verbose=True) 
+llm = OpenAI(temperature=0.1, openai_api_key=llm_api_key, verbose=True) 
 
 # Set path to the document
 avgo_document = os.path.relpath('Docs/broadcom_annual_report.pdf')
