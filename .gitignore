@@ -1,4 +1,4 @@
 .vscode
 .chroma
 api_file.py
-__pycache__
+_pycache_
